@@ -269,17 +269,25 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     self.transactionCallbackId = nil;
     self.completionCallbackId = nil;
     
+    NSLog(@"LOG start startAddPaymentPass 1");
+  
     if ([arguments count] != 1){
+        NSLog(@"LOG start startAddPaymentPass 2");
         pluginResult =[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"incorrect number of arguments"];
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        NSLog(@"LOG start startAddPaymentPass 3");
     } else {
+        NSLog(@"LOG start startAddPaymentPass 4");
         // Options
         NSDictionary* options = [arguments objectAtIndex:0];
         
         // encryption scheme to be used (RSA_V2 or ECC_V2)
         NSString* scheme = [options objectForKey:@"encryptionScheme"];
         PKEncryptionScheme encryptionScheme = PKEncryptionSchemeRSA_V2;
+      
+        NSLog(@"LOG start startAddPaymentPass 5");
+      
         if (scheme != nil) {
             if([[scheme uppercaseString] isEqualToString:@"RSA_V2"]) {
                 encryptionScheme = PKEncryptionSchemeRSA_V2;
@@ -290,11 +298,15 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
             }
         }
 
+        NSLog(@"LOG start startAddPaymentPass 6");
+      
         PKAddPaymentPassRequestConfiguration* configuration = [[PKAddPaymentPassRequestConfiguration alloc] initWithEncryptionScheme:encryptionScheme];
-        
+        NSLog(@"LOG start startAddPaymentPass 7");
+      
         // The name of the person the card is issued to
         configuration.cardholderName = [options objectForKey:@"cardholderName"];
-        
+        NSLog(@"LOG start startAddPaymentPass 8");
+      
         // Last 4/5 digits of PAN. The last four or five digits of the PAN. Presented to the user with dots prepended to indicate that it is a suffix.
         configuration.primaryAccountSuffix = [options objectForKey:@"primaryAccountSuffix"];
         
@@ -304,7 +316,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
         // Filters the device and attached devices that already have this card provisioned. No filter is applied if the parameter is omitted
         configuration.primaryAccountIdentifier = [self getCardFPAN:configuration.primaryAccountSuffix]; //@"V-3018253329239943005544";//@"";
         
-        
+        NSLog(@"LOG start startAddPaymentPass 9");
         // Filters the networks shown in the introduction view to this single network.
         NSString* paymentNetwork = [options objectForKey:@"paymentNetwork"];
         if([[paymentNetwork uppercaseString] isEqualToString:@"VISA"]) {
