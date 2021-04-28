@@ -316,7 +316,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
         // Filters the device and attached devices that already have this card provisioned. No filter is applied if the parameter is omitted
         configuration.primaryAccountIdentifier = [self getCardFPAN:configuration.primaryAccountSuffix]; //@"V-3018253329239943005544";//@"";
         
-        NSLog(@"LOG start startAddPaymentPass 9");
+        NSLog(@"LOG start startAddPaymentPass 9 - localizedDescription: %@, cardholderName: %@, primaryAccountIdentifier: %@",configuration.localizedDescription,configuration.cardholderName,configuration.primaryAccountIdentifier);
         // Filters the networks shown in the introduction view to this single network.
         NSString* paymentNetwork = [options objectForKey:@"paymentNetwork"];
         if([[paymentNetwork uppercaseString] isEqualToString:@"VISA"]) {
