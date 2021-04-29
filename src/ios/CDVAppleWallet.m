@@ -76,7 +76,7 @@ NSLog(@"LOG checkCardEligibility 1, cardIdentifier:%@", cardIdentifier);
       }
     }
     
-NSLog(@"LOG checkCardEligibility 2, cardIdentifier:%@", cardAddedtoPasses);
+NSLog(@"LOG checkCardEligibility 2, cardAddedtoPasses:%d", cardAddedtoPasses);
   
     if (WCSession.isSupported) { // check if the device support to handle an Apple Watch
         WCSession *session = [WCSession defaultSession];
@@ -115,7 +115,7 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
 
     cardEligible = !cardAddedtoPasses || !cardAddedtoRemotePasses;
 
-  NSLog(@"LOG checkCardEligibility 4, cardAddedtoPasses: %@, cardAddedtoRemotePasses: %@, cardEligible: %@", cardEligible,cardAddedtoPasses,cardAddedtoRemotePasses);
+  NSLog(@"LOG checkCardEligibility 4, cardAddedtoPasses: %d, cardAddedtoRemotePasses: %d, cardEligible: %d", cardEligible,cardAddedtoPasses,cardAddedtoRemotePasses);
   
   
     CDVPluginResult *pluginResult;
