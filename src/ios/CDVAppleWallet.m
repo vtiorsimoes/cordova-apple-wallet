@@ -53,6 +53,8 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     Boolean cardAddedtoPasses = false;
     Boolean cardAddedtoRemotePasses = false;
     
+NSLog(@"LOG checkCardEligibility 1, cardIdentifier:%@", cardIdentifier);
+  
     PKPassLibrary *passLibrary = [[PKPassLibrary alloc] init];
 //     NSArray<PKPass *> *paymentPasses = [passLibrary passesOfType:PKPassTypePayment];
     NSArray *paymentPasses = [[NSArray alloc] init];
@@ -74,11 +76,15 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
       }
     }
     
+NSLog(@"LOG checkCardEligibility 2, cardIdentifier:%@", cardAddedtoPasses);
+  
     if (WCSession.isSupported) { // check if the device support to handle an Apple Watch
         WCSession *session = [WCSession defaultSession];
         [session setDelegate:self.appDelegate];
         [session activateSession];
         
+NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
+      
         if ([session isPaired]) { // Check if the iPhone is paired with the Apple Watch
 
           if (@available(iOS 13.5, *)) {
@@ -102,10 +108,16 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
             cardAddedtoRemotePasses = true;
     }
     else
+    {
+        NSLog(@"LOG checkCardEligibility 3, NOT WCSession.isSupported");
         cardAddedtoRemotePasses = true;
+    }
 
     cardEligible = !cardAddedtoPasses || !cardAddedtoRemotePasses;
-    
+
+  NSLog(@"LOG checkCardEligibility 4, cardAddedtoPasses: %@, cardAddedtoRemotePasses: %@, cardEligible: %@", cardEligible,cardAddedtoPasses,cardAddedtoRemotePasses);
+  
+  
     CDVPluginResult *pluginResult;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:cardEligible];
     //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:[passLibrary canAddPaymentPassWithPrimaryAccountIdentifier:cardIdentifier]];
