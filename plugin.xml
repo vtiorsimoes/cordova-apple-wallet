@@ -21,10 +21,44 @@
             </feature>
         </config-file>
         
-        <config-file target="Entitlements-Release.plist" parent="com.apple.developer.payment-pass-provisioning" mode="add">
-			<true />
-		</config-file>
+	<config-file target="*/Entitlements-Debug.plist" parent="com.apple.developer.payment-pass-provisioning">
+		<true/>
+	</config-file>
+	    
+	<config-file target="*/Entitlements-Release.plist" parent="com.apple.developer.payment-pass-provisioning">
+		<true/>
+	</config-file>
+
+	<config-file target="*/Entitlements-Debug.plist" parent="com.apple.developer.payment-pass-provisioning">
+            <true/>
+        </config-file>
+        <config-file target="*/Entitlements-Release.plist" parent="com.apple.developer.payment-pass-provisioning">
+            <true/>
+        </config-file>
         
+        <config-file target="*/Entitlements-Debug.plist" parent="com.apple.developer.pass-type-identifiers">
+            <array>
+                <string>outsystemsfs.servicesdev.kpmg.pt</string>
+            </array>
+        </config-file>
+        <config-file target="*/Entitlements-Release.plist" parent="com.apple.developer.pass-type-identifiers">
+            <array>
+                <string>outsystemsfs.servicesdev.kpmg.pt</string>
+            </array>
+        </config-file>
+
+        <config-file target="*/Entitlements-Debug.plist" parent="keychain-access-groups">
+            <array>
+                <string>outsystemsfs.servicesdev.kpmg.pt</string>
+            </array>
+        </config-file>
+        <config-file target="*/Entitlements-Release.plist" parent="keychain-access-groups">
+            <array>
+                <string>outsystemsfs.servicesdev.kpmg.pt</string>
+            </array>
+        </config-file>
+
+	    
         <js-module src="www/appleWallet.js" name="AppleWallet">
             <clobbers target="AppleWallet" />
         </js-module>
