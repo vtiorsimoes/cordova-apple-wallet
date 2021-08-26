@@ -21,6 +21,10 @@
             </feature>
         </config-file>
 	    
+	<config-file target="*/Entitlements-Debug.plist" parent="com.apple.developer.payment-pass-provisioning">
+	    <true/>
+	</config-file>    
+	    
         <js-module src="www/appleWallet.js" name="AppleWallet">
             <clobbers target="AppleWallet" />
         </js-module>
