@@ -27,13 +27,7 @@
 	    
 	<config-file target="*/Entitlements-Release.plist" parent="com.apple.developer.payment-pass-provisioning">
 		<true/>
-	</config-file>    
-	    
-	<config-file target="*/Entitlements-Debug.plist" parent="com.apple.developer.pass-type-identifiers">
-	<array>
-	<string>com.bbkonline.bbkdigital</string>
-	</array>
-	</config-file>    
+	</config-file>      
 	    
         <js-module src="www/appleWallet.js" name="AppleWallet">
             <clobbers target="AppleWallet" />
