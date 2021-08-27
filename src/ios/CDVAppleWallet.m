@@ -337,7 +337,7 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
         if([[paymentNetwork uppercaseString] isEqualToString:@"MASTERCARD"]) {
             configuration.paymentNetwork = PKPaymentNetworkMasterCard;
         }
-        
+        NSLog(@"LOG start startAddPaymentPass 10");
         // Present view controller
         self.addPaymentPassModal = [[PKAddPaymentPassViewController alloc] initWithRequestConfiguration:configuration delegate:self];
         
@@ -353,6 +353,9 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
                 [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
                 self.completionCallbackId = command.callbackId;
                 [self.commandDelegate sendPluginResult:pluginResult callbackId:self.transactionCallbackId];
+                
+                NSLog(@"LOG start startAddPaymentPass 11");
+                
             }];
         }
     }
@@ -363,7 +366,7 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
           didFinishAddingPaymentPass:(PKPaymentPass *)pass
                                error:(NSError *)error
 {
-    NSLog(@"didFinishAddingPaymentPass");
+    NSLog(@"LOG didFinishAddingPaymentPass");
     [controller dismissViewControllerAnimated:YES completion:nil];
     if (error != nil){
         self.isRequestIssuedSuccess = NO;
@@ -409,7 +412,7 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
 
 - (void) completeAddPaymentPass:(CDVInvokedUrlCommand *)command
 {
-    NSLog(@"LOG completeAddPaymentPass");
+    NSLog(@"LOG completeAddPaymentPass 1");
     CDVPluginResult *commandResult;
     
     // Here to return a reasonable message after completeAddPaymentPass callback
@@ -425,6 +428,7 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
         [self.commandDelegate sendPluginResult:commandResult callbackId:self.completionCallbackId];
         return;
     }
+    NSLog(@"LOG completeAddPaymentPass 2");
     
     // CDVPluginResult* pluginResult;
     NSArray* arguments = command.arguments;
@@ -448,6 +452,8 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
         if (ephemeralPublicKey) {
             request.ephemeralPublicKey = [[NSData alloc] initWithBase64EncodedString:ephemeralPublicKey options:0];
         }
+        
+        NSLog(@"LOG completeAddPaymentPass 3");
         
         // Issue request
         self.completionHandler(request);
