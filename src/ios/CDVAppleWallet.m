@@ -591,13 +591,15 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
         request.ephemeralPublicKey = [[NSData alloc] initWithBase64EncodedString:ephemeralPublicKey options:0];
     }
     
-    NSLog(@"AppleWallet::completeAddPaymentPass: calling completion handler...");
+	if (self.completionHandler)
+	{
+		NSLog(@"AppleWallet::completeAddPaymentPass: calling completion handler...{callbackId='%@'}", command.callbackId);
     
-    // Issue request
-    self.completionHandler(request);
-    self.completionCallbackId = command.callbackId;
-    self.isRequestIssued = true;
-   
+		// Issue request
+		self.completionHandler(request);
+		self.completionCallbackId = command.callbackId;
+		self.isRequestIssued = true;
+	}
     NSLog(@"AppleWallet::completeAddPaymentPass: exit.");
 }
 
