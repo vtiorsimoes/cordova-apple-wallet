@@ -461,7 +461,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     
     NSLog(@"AppleWallet::startAddPaymentPass: exit!");
 }
-
+							   
 
 - (void) addPaymentPassViewController:(PKAddPaymentPassViewController *)controller
           didFinishAddingPaymentPass:(PKPaymentPass *)pass
@@ -580,7 +580,10 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     NSString* wrappedKey = [options objectForKey:@"wrappedKey"];
     NSString* ephemeralPublicKey = [options objectForKey:@"ephemeralPublicKey"];
     
-    request.activationData = [[NSData alloc] initWithBase64EncodedString:activationData options:0]; //[activationData dataUsingEncoding:NSUTF8StringEncoding];
+	// Miguel Franco
+    //request.activationData = [[NSData alloc] initWithBase64EncodedString:activationData options:0]; //[activationData dataUsingEncoding:NSUTF8StringEncoding];
+	request.activationData =  activationData; //[activationData dataUsingEncoding:NSUTF8StringEncoding];
+	
     request.encryptedPassData = [[NSData alloc] initWithBase64EncodedString:encryptedPassData options:0];
     if (wrappedKey)
     {
@@ -600,7 +603,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
 		self.completionCallbackId = command.callbackId;
 		self.isRequestIssued = true;
 	}
-    NSLog(@"AppleWallet::completeAddPaymentPass: exit.");
+    NSLog(@"AppleWallet::completeAddPaymentPass: exit!");
 }
 
 
