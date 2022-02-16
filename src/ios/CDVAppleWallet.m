@@ -47,75 +47,130 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
 }
 
 // Plugin Method - check Card Eligibility
-- (void) checkCardEligibility:(CDVInvokedUrlCommand*)command {
+- (void) checkCardEligibility:(CDVInvokedUrlCommand*)command
+{
     NSString * cardIdentifier = [command.arguments objectAtIndex:0];
     Boolean cardEligible = true;
     Boolean cardAddedtoPasses = false;
     Boolean cardAddedtoRemotePasses = false;
     
-NSLog(@"LOG checkCardEligibility 1, cardIdentifier:%@", cardIdentifier);
+    NSLog(@"AppleWallet::checkCardEligibility: entry! {cardIdentifier='%@'}", cardIdentifier);
   
     PKPassLibrary *passLibrary = [[PKPassLibrary alloc] init];
 //     NSArray<PKPass *> *paymentPasses = [passLibrary passesOfType:PKPassTypePayment];
     NSArray *paymentPasses = [[NSArray alloc] init];
-    if (@available(iOS 13.5, *)) { // PKPassTypePayment is deprecated in iOS13.5
-      paymentPasses = [passLibrary passesOfType: PKPassTypeSecureElement];
-      for (PKPass *pass in paymentPasses) {
-        PKSecureElementPass *paymentPass = [pass secureElementPass];
-        if ([[paymentPass primaryAccountIdentifier] isEqualToString:cardIdentifier]) {
-          cardAddedtoPasses = true;
+    if (@available(iOS 13.5, *))
+    { // PKPassTypePayment is deprecated in iOS13.5
+        NSLog(@"AppleWallet::checkCardEligibility: looking for paymentPass... (iOS 13.5 or higher)");
+        
+        paymentPasses = [passLibrary passesOfType: PKPassTypeSecureElement];
+        for (PKPass *pass in paymentPasses)
+        {
+            PKSecureElementPass *paymentPass = [pass secureElementPass];
+            
+            NSString* primaryAccountIdentifier = [paymentPass primaryAccountIdentifier];
+            NSLog(@"AppleWallet::checkCardEligibility: cardIdentifier check. {identifier='%@'}", primaryAccountIdentifier);
+            
+            if ([primaryAccountIdentifier isEqualToString:cardIdentifier])
+            {
+                cardAddedtoPasses = true;
+                
+                break;
+            }
         }
-      }
-    } else {
-      paymentPasses = [passLibrary passesOfType: PKPassTypePayment];
-      for (PKPass *pass in paymentPasses) {
-        PKPaymentPass *paymentPass = [pass paymentPass];
-        if([[paymentPass primaryAccountIdentifier] isEqualToString:cardIdentifier]) {
-          cardAddedtoPasses = true;
+    }
+    else
+    {
+        NSLog(@"AppleWallet::checkCardEligibility: looking for paymentPass... (iOS lower then 13.5)");
+        
+        paymentPasses = [passLibrary passesOfType: PKPassTypePayment];
+        for (PKPass *pass in paymentPasses)
+        {
+            PKPaymentPass *paymentPass = [pass paymentPass];
+            
+            NSString* primaryAccountIdentifier = [paymentPass primaryAccountIdentifier];
+            NSLog(@"AppleWallet::checkCardEligibility: cardIdentifier check. {identifier='%@'}", primaryAccountIdentifier);
+            
+            if([primaryAccountIdentifier isEqualToString:cardIdentifier])
+            {
+                cardAddedtoPasses = true;
+                
+                break;
+            }
         }
-      }
     }
     
-NSLog(@"LOG checkCardEligibility 2, cardAddedtoPasses:%d", cardAddedtoPasses);
+    NSLog(@"AppleWallet::checkCardEligibility: cardIdentfier check completed. {cardAddedtoPasses=%d}", cardAddedtoPasses);
   
-    if (WCSession.isSupported) { // check if the device support to handle an Apple Watch
+    if (WCSession.isSupported)
+    {
+        // check if the device support to handle an Apple Watch
+        
         WCSession *session = [WCSession defaultSession];
         [session setDelegate:self.appDelegate];
         [session activateSession];
         
-NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
+        NSLog(@"AppleWallet::checkCardEligibility: WCSession is supported.");
       
-        if ([session isPaired]) { // Check if the iPhone is paired with the Apple Watch
-
-          if (@available(iOS 13.5, *)) {
+        if ([session isPaired])
+        {
+            // Check if the iPhone is paired with the Apple Watch
+            if (@available(iOS 13.5, *))
+            {
+                NSLog(@"AppleWallet::checkCardEligibility: looking for remote paymentPass... (iOS 13.5 or higher)");
+                
                 paymentPasses = [passLibrary remoteSecureElementPasses]; // remotePaymentPasses is deprecated in iOS13.5
-                for (PKSecureElementPass *pass in paymentPasses) {
-                    if ([[pass primaryAccountIdentifier] isEqualToString:cardIdentifier]) {
+                for (PKSecureElementPass *pass in paymentPasses)
+                {
+                    NSString* primaryAccountIdentifier = [pass primaryAccountIdentifier];
+                    NSLog(@"AppleWallet::checkCardEligibility: cardIdentifier check (remote). {identifier='%@'}", primaryAccountIdentifier);
+                    
+                    if ([primaryAccountIdentifier isEqualToString:cardIdentifier])
+                    {
                         cardAddedtoPasses = true;
+                        
+                        break;
                     }
                 }
-            } else {
+            }
+            else
+            {
+                NSLog(@"AppleWallet::checkCardEligibility: looking for remote paymentPass... (iOS lower than 13.5)");
+                
                 paymentPasses = [passLibrary remotePaymentPasses];
-                for (PKPass *pass in paymentPasses) {
+                for (PKPass *pass in paymentPasses)
+                {
                     PKPaymentPass * paymentPass = [pass paymentPass];
-                    if([[paymentPass primaryAccountIdentifier] isEqualToString:cardIdentifier])
+                    
+                    NSString* primaryAccountIdentifier = [paymentPass primaryAccountIdentifier];
+                    NSLog(@"AppleWallet::checkCardEligibility: cardIdentifier check (remote). {identifier='%@'}", primaryAccountIdentifier);
+                    
+                    if([primaryAccountIdentifier isEqualToString:cardIdentifier])
+                    {
                         cardAddedtoRemotePasses = true;
+                        
+                        break;
+                    }
                 }
             }
-          
         }
         else
+        {
+            NSLog(@"AppleWallet::checkCardEligibility: session is not paired!");
+            
             cardAddedtoRemotePasses = true;
+        }
     }
     else
     {
-        NSLog(@"LOG checkCardEligibility 3, NOT WCSession.isSupported");
+        NSLog(@"AppleWallet::checkCardEligibility: WCSession NOT supported!");
+
         cardAddedtoRemotePasses = true;
     }
 
     cardEligible = !cardAddedtoPasses || !cardAddedtoRemotePasses;
 
-  NSLog(@"LOG checkCardEligibility 4, cardAddedtoPasses: %d, cardAddedtoRemotePasses: %d, cardEligible: %d", cardEligible,cardAddedtoPasses,cardAddedtoRemotePasses);
+    NSLog(@"AppleWallet::checkCardEligibility: check completed. {cardAddedtoPasses=%d cardAddedtoRemotePasses=%d cardEligible=%d}", cardEligible,cardAddedtoPasses,cardAddedtoRemotePasses);
   
   
     CDVPluginResult *pluginResult;
@@ -125,7 +180,8 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
 }
 
 // Plugin Method - check Card Eligibility By Suffix
-- (void) checkCardEligibilityBySuffix:(CDVInvokedUrlCommand*)command {
+- (void) checkCardEligibilityBySuffix:(CDVInvokedUrlCommand*)command
+{
     NSString * cardSuffix = [command.arguments objectAtIndex:0];
     Boolean cardEligible = true;
     Boolean cardAddedtoPasses = false;
@@ -273,92 +329,137 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
 
 - (void) startAddPaymentPass:(CDVInvokedUrlCommand *)command
 {
+    NSLog(@"AppleWallet::startAddPaymentPass: entry!");
+    
     self.isRequestIssued = false;
-    NSLog(@"LOG start startAddPaymentPass");
+    
     CDVPluginResult* pluginResult;
     NSArray* arguments = command.arguments;
     
     self.transactionCallbackId = nil;
     self.completionCallbackId = nil;
     
-    NSLog(@"LOG start startAddPaymentPass 1");
-  
-    if ([arguments count] != 1){
-        NSLog(@"LOG start startAddPaymentPass 2");
+    NSUInteger numberOfArguments = [arguments count];
+    
+    if (numberOfArguments == 0)
+    {
+        NSLog(@"AppleWallet::startAddPaymentPass: argument check failure!");
+        
         pluginResult =[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"incorrect number of arguments"];
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        NSLog(@"LOG start startAddPaymentPass 3");
-    } else {
-        NSLog(@"LOG start startAddPaymentPass 4");
-        // Options
-        NSDictionary* options = [arguments objectAtIndex:0];
         
-        // encryption scheme to be used (RSA_V2 or ECC_V2)
-        NSString* scheme = [options objectForKey:@"encryptionScheme"];
-        PKEncryptionScheme encryptionScheme = PKEncryptionSchemeRSA_V2;
-      
-        NSLog(@"LOG start startAddPaymentPass 5");
-      
-        if (scheme != nil) {
-            if([[scheme uppercaseString] isEqualToString:@"RSA_V2"]) {
-                encryptionScheme = PKEncryptionSchemeRSA_V2;
-            }
+        NSLog(@"AppleWallet::startAddPaymentPass: error returned!");
+        
+        return;
+    }
+    
+   
+    // Options
+    NSDictionary* options = [arguments objectAtIndex:0];
+    
+    // encryption scheme to be used (RSA_V2 or ECC_V2)
+    NSString* scheme = [options objectForKey:@"encryptionScheme"];
+    PKEncryptionScheme encryptionScheme = PKEncryptionSchemeRSA_V2;
+  
+    
+    if (scheme == nil)
+    {
+        NSLog(@"AppleWallet::startAddPaymentPass: scheme not defined!");
+    }
+    else
+    {
+        if([[scheme uppercaseString] isEqualToString:@"RSA_V2"])
+        {
+            NSLog(@"AppleWallet::startAddPaymentPass: RSA V2 scheme identified.");
             
-            if([[scheme uppercaseString] isEqualToString:@"ECC_V2"]) {
-                encryptionScheme = PKEncryptionSchemeECC_V2;
-            }
+            encryptionScheme = PKEncryptionSchemeRSA_V2;
         }
-
-        NSLog(@"LOG start startAddPaymentPass 6");
-      
-        PKAddPaymentPassRequestConfiguration* configuration = [[PKAddPaymentPassRequestConfiguration alloc] initWithEncryptionScheme:encryptionScheme];
-        NSLog(@"LOG start startAddPaymentPass 7");
-      
-        // The name of the person the card is issued to
-        configuration.cardholderName = [options objectForKey:@"cardholderName"];
-        NSLog(@"LOG start startAddPaymentPass 8");
-      
-        // Last 4/5 digits of PAN. The last four or five digits of the PAN. Presented to the user with dots prepended to indicate that it is a suffix.
-        configuration.primaryAccountSuffix = [options objectForKey:@"primaryAccountSuffix"];
-        
-        // A short description of the card.
-        configuration.localizedDescription = [options objectForKey:@"localizedDescription"];
-        
-        // Filters the device and attached devices that already have this card provisioned. No filter is applied if the parameter is omitted
-        configuration.primaryAccountIdentifier = [self getCardFPAN:configuration.primaryAccountSuffix]; //@"V-3018253329239943005544";//@"";
-        
-        NSLog(@"LOG start startAddPaymentPass 9 - localizedDescription: %@, cardholderName: %@, primaryAccountIdentifier: %@",configuration.localizedDescription,configuration.cardholderName,configuration.primaryAccountIdentifier);
-        // Filters the networks shown in the introduction view to this single network.
-        NSString* paymentNetwork = [options objectForKey:@"paymentNetwork"];
-        if([[paymentNetwork uppercaseString] isEqualToString:@"VISA"]) {
-            configuration.paymentNetwork = PKPaymentNetworkVisa;
+        else if([[scheme uppercaseString] isEqualToString:@"ECC_V2"])
+        {
+            NSLog(@"AppleWallet::startAddPaymentPass: ECC V2 scheme identified.");
+            
+            encryptionScheme = PKEncryptionSchemeECC_V2;
         }
-        if([[paymentNetwork uppercaseString] isEqualToString:@"MASTERCARD"]) {
-            configuration.paymentNetwork = PKPaymentNetworkMasterCard;
-        }
-        NSLog(@"LOG start startAddPaymentPass 10");
-        // Present view controller
-        self.addPaymentPassModal = [[PKAddPaymentPassViewController alloc] initWithRequestConfiguration:configuration delegate:self];
-        
-        if(!self.addPaymentPassModal) {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Can not init PKAddPaymentPassViewController"];
-            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        } else {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
-            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-            self.transactionCallbackId = command.callbackId;
-            [self.viewController presentViewController:self.addPaymentPassModal animated:YES completion:^{
-                [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-                self.completionCallbackId = command.callbackId;
-                [self.commandDelegate sendPluginResult:pluginResult callbackId:self.transactionCallbackId];
-                
-                NSLog(@"LOG start startAddPaymentPass 11");
-                
-            }];
+        else
+        {
+            NSLog(@"AppleWallet::startAddPaymentPass: unknown scheme!");
         }
     }
+  
+    PKAddPaymentPassRequestConfiguration* configuration = [[PKAddPaymentPassRequestConfiguration alloc] initWithEncryptionScheme:encryptionScheme];
+  
+    // The name of the person the card is issued to
+    configuration.cardholderName = [options objectForKey:@"cardholderName"];
+    NSLog(@"AppleWallet::startAddPaymentPass: cardholderName check. {cardholderName='%@'}", configuration.cardholderName);
+    
+    // Last 4/5 digits of PAN. The last four or five digits of the PAN. Presented to the user with dots prepended to indicate that it is a suffix.
+    configuration.primaryAccountSuffix = [options objectForKey:@"primaryAccountSuffix"];
+    NSLog(@"AppleWallet::startAddPaymentPass: primaryAccountSuffix check. {primaryAccountSuffix='%@'}", configuration.primaryAccountSuffix);
+    
+    // A short description of the card.
+    configuration.localizedDescription = [options objectForKey:@"localizedDescription"];
+    NSLog(@"AppleWallet::startAddPaymentPass: localizedDescription check. {localizedDescription='%@'}", configuration.localizedDescription);
+    
+    // Filters the device and attached devices that already have this card provisioned. No filter is applied if the parameter is omitted
+    configuration.primaryAccountIdentifier = [self getCardFPAN:configuration.primaryAccountSuffix]; //@"V-3018253329239943005544";//@"";
+    NSLog(@"AppleWallet::startAddPaymentPass: primaryAccountIdentifier check. {primaryAccountIdentifier='%@'}", configuration.primaryAccountIdentifier);
+    
+    
+    // Filters the networks shown in the introduction view to this single network.
+    NSString* paymentNetwork = [options objectForKey:@"paymentNetwork"];
+    
+    if([[paymentNetwork uppercaseString] isEqualToString:@"VISA"])
+    {
+        configuration.paymentNetwork = PKPaymentNetworkVisa;
+        
+        NSLog(@"AppleWallet::startAddPaymentPass: VISA payment network selected.");
+    }
+    else if([[paymentNetwork uppercaseString] isEqualToString:@"MASTERCARD"])
+    {
+        configuration.paymentNetwork = PKPaymentNetworkMasterCard;
+        
+        NSLog(@"AppleWallet::startAddPaymentPass: MASTERCARD payment network selected.");
+    }
+    else
+    {
+        NSLog(@"AppleWallet::startAddPaymentPass: unknown payment network! {paymentNetwork='%@'}", paymentNetwork);
+    }
+    
+
+    // Present view controller
+    self.addPaymentPassModal = [[PKAddPaymentPassViewController alloc] initWithRequestConfiguration:configuration delegate:self];
+    
+    if(!self.addPaymentPassModal)
+    {
+        NSLog(@"AppleWallet::startAddPaymentPass: PKAddPaymentPassViewController creation failure!");
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Can not init PKAddPaymentPassViewController"];
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        
+        NSLog(@"AppleWallet::startAddPaymentPass: error returned!");
+        
+        return;
+    }
+    
+    
+    NSLog(@"AppleWallet::startAddPaymentPass: opening PKAddPaymentPassViewController...");
+    
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    self.transactionCallbackId = command.callbackId;
+    [self.viewController presentViewController:self.addPaymentPassModal animated:YES completion:^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        self.completionCallbackId = command.callbackId;
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.transactionCallbackId];
+        
+        NSLog(@"AppleWallet::startAddPaymentPass: PKAddPaymentPassViewController completion checkpoint.");
+        
+    }];
+    
+    
+    NSLog(@"AppleWallet::startAddPaymentPass: exit!");
 }
 
 
@@ -366,12 +467,23 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
           didFinishAddingPaymentPass:(PKPaymentPass *)pass
                                error:(NSError *)error
 {
-    NSLog(@"LOG didFinishAddingPaymentPass");
+    NSLog(@"AppleWallet::addPaymentPassViewController::: entry!");
+    
     [controller dismissViewControllerAnimated:YES completion:nil];
-    if (error != nil){
+    
+    NSLog(@"AppleWallet::addPaymentPassViewController::: PKAddPaymentPassViewController dismissed.");
+    
+    if (error != nil)
+    {
+        NSLog(@"AppleWallet::addPaymentPassViewController::: error!");
+        
         self.isRequestIssuedSuccess = NO;
         [self completeAddPaymentPass:nil];
-    }else{
+    }
+    else
+    {
+        NSLog(@"AppleWallet::addPaymentPassViewController::: success!");
+        
         self.isRequestIssuedSuccess = YES;
         [self completeAddPaymentPass:nil];
     }
@@ -383,7 +495,7 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
                       nonceSignature:(NSData *)nonceSignature
                    completionHandler:(void (^)(PKAddPaymentPassRequest *request))handler
 {
-    NSLog(@"LOG addPaymentPassViewController generateRequestWithCertificateChain");
+    NSLog(@"AppleWallet::addPaymentPassViewController::::: entry!");
     
     // save completion handler
     self.completionHandler = handler;
@@ -407,60 +519,88 @@ NSLog(@"LOG checkCardEligibility 3, WCSession.isSupported");
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:dictionary];
     [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.completionCallbackId];
+    
+    NSLog(@"AppleWallet::addPaymentPassViewController::::: exit!");
 }
 
 
 - (void) completeAddPaymentPass:(CDVInvokedUrlCommand *)command
 {
-    NSLog(@"LOG completeAddPaymentPass 1");
+    NSLog(@"AppleWallet::completeAddPaymentPass: entry!");
+    
     CDVPluginResult *commandResult;
     
     // Here to return a reasonable message after completeAddPaymentPass callback
-    if (self.isRequestIssued == true){
-        if (self.isRequestIssuedSuccess == false){
+    if (self.isRequestIssued == true)
+    {
+        NSLog(@"AppleWallet::completeAddPaymentPass: request was issued.");
+        
+        if (self.isRequestIssuedSuccess == false)
+        {
             // Upcall with the data error
             commandResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"error"];
-        }else{
+            
+            NSLog(@"AppleWallet::completeAddPaymentPass: request issue failure!");
+        }
+        else
+        {
             // Upcall with the data success
             commandResult= [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"success"];
+            
+            NSLog(@"AppleWallet::completeAddPaymentPass: request issue success!");
         }
+        
         [commandResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:commandResult callbackId:self.completionCallbackId];
+        
         return;
     }
-    NSLog(@"LOG completeAddPaymentPass 2");
+    
+    NSLog(@"AppleWallet::completeAddPaymentPass: request not issued.");
     
     // CDVPluginResult* pluginResult;
     NSArray* arguments = command.arguments;
-    if ([arguments count] != 1){
+    NSUInteger numberOfArguments = [arguments count];
+    if (numberOfArguments == 0)
+    {
         // pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"incorrect number of arguments"];
         // [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    } else {
-        PKAddPaymentPassRequest* request = [[PKAddPaymentPassRequest alloc] init];
-        NSDictionary* options = [arguments objectAtIndex:0];
         
-        NSString* activationData = [options objectForKey:@"activationData"];
-        NSString* encryptedPassData = [options objectForKey:@"encryptedPassData"];
-        NSString* wrappedKey = [options objectForKey:@"wrappedKey"];
-        NSString* ephemeralPublicKey = [options objectForKey:@"ephemeralPublicKey"];
+        NSLog(@"AppleWallet::startAddPaymentPass: exit due to an incorrect number of arguments!");
         
-        request.activationData = [[NSData alloc] initWithBase64EncodedString:activationData options:0]; //[activationData dataUsingEncoding:NSUTF8StringEncoding];
-        request.encryptedPassData = [[NSData alloc] initWithBase64EncodedString:encryptedPassData options:0];
-        if (wrappedKey) {
-            request.wrappedKey = [[NSData alloc] initWithBase64EncodedString:wrappedKey options:0];
-        }
-        if (ephemeralPublicKey) {
-            request.ephemeralPublicKey = [[NSData alloc] initWithBase64EncodedString:ephemeralPublicKey options:0];
-        }
-        
-        NSLog(@"LOG completeAddPaymentPass 3");
-        
-        // Issue request
-        self.completionHandler(request);
-        self.completionCallbackId = command.callbackId;
-        self.isRequestIssued = true;
+        return;
     }
+    
+    
+    PKAddPaymentPassRequest* request = [[PKAddPaymentPassRequest alloc] init];
+    NSDictionary* options = [arguments objectAtIndex:0];
+    
+    NSString* activationData = [options objectForKey:@"activationData"];
+    NSString* encryptedPassData = [options objectForKey:@"encryptedPassData"];
+    NSString* wrappedKey = [options objectForKey:@"wrappedKey"];
+    NSString* ephemeralPublicKey = [options objectForKey:@"ephemeralPublicKey"];
+    
+    request.activationData = [[NSData alloc] initWithBase64EncodedString:activationData options:0]; //[activationData dataUsingEncoding:NSUTF8StringEncoding];
+    request.encryptedPassData = [[NSData alloc] initWithBase64EncodedString:encryptedPassData options:0];
+    if (wrappedKey)
+    {
+        request.wrappedKey = [[NSData alloc] initWithBase64EncodedString:wrappedKey options:0];
+    }
+    if (ephemeralPublicKey)
+    {
+        request.ephemeralPublicKey = [[NSData alloc] initWithBase64EncodedString:ephemeralPublicKey options:0];
+    }
+    
+    NSLog(@"AppleWallet::completeAddPaymentPass: calling completion handler...");
+    
+    // Issue request
+    self.completionHandler(request);
+    self.completionCallbackId = command.callbackId;
+    self.isRequestIssued = true;
+   
+    NSLog(@"AppleWallet::completeAddPaymentPass: exit.");
 }
+
 
 - (NSData *)HexToNSData:(NSString *)hexString
 {
