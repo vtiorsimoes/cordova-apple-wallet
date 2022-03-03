@@ -580,18 +580,21 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     NSString* wrappedKey = [options objectForKey:@"wrappedKey"];
     NSString* ephemeralPublicKey = [options objectForKey:@"ephemeralPublicKey"];
     
-	// Miguel Franco: Testing with UTF8
-    //request.activationData = [[NSData alloc] initWithBase64EncodedString:activationData options:0]; //[activationData dataUsingEncoding:NSUTF8StringEncoding];
-	request.activationData = [activationData dataUsingEncoding:NSUTF8StringEncoding];
+	request.activationData = [[NSData alloc] initWithBase64EncodedString:activationData options:0];
+	NSLog(@"AppleWallet::completeAddPaymentPass:activationData=%@", activationData);
 	
     request.encryptedPassData = [[NSData alloc] initWithBase64EncodedString:encryptedPassData options:0];
+	NSLog(@"AppleWallet::completeAddPaymentPass:encryptedPassData=%@", encryptedPassData);
+	
     if (wrappedKey)
     {
         request.wrappedKey = [[NSData alloc] initWithBase64EncodedString:wrappedKey options:0];
+		NSLog(@"AppleWallet::completeAddPaymentPass:wrappedKey=%@", wrappedKey);
     }
     if (ephemeralPublicKey)
     {
         request.ephemeralPublicKey = [[NSData alloc] initWithBase64EncodedString:ephemeralPublicKey options:0];
+		NSLog(@"AppleWallet::completeAddPaymentPass:ephemeralPublicKey=%@", ephemeralPublicKey);
     }
     
 	if (self.completionHandler)
