@@ -530,6 +530,8 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     
     CDVPluginResult *commandResult;
     
+    NSLog(@"AppleWallet::completeAddPaymentPass: commandResult object created");
+    
     // Here to return a reasonable message after completeAddPaymentPass callback
     if (self.isRequestIssued == true)
     {
