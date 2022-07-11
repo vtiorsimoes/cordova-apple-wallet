@@ -476,6 +476,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     if (error != nil)
     {
         NSLog(@"AppleWallet::addPaymentPassViewController::: error!");
+		NSLog(@"%@",[error localizedDescription]);
         
         self.isRequestIssuedSuccess = NO;
         [self completeAddPaymentPass:nil];
