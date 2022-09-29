@@ -252,11 +252,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
 		NSLog(@"AppleWallet::checkCardEligibilityBySuffix: WCSession is not Supported!");
 	}
     
-    cardEligible = !cardAddedtoPasses || !cardAddedtoRemotePasses;
-	
-	NSLog(@"AppleWallet::checkCardEligibilityBySuffix: {cardAddedtoPasses='%@'}!",cardAddedtoPasses);
-	NSLog(@"AppleWallet::checkCardEligibilityBySuffix: {cardAddedtoRemotePasses='%@'}!",cardAddedtoRemotePasses);
-    
+    cardEligible = !cardAddedtoPasses || !cardAddedtoRemotePasses;	   
     CDVPluginResult *pluginResult;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:cardEligible];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
