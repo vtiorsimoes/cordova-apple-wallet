@@ -182,11 +182,16 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
 // Plugin Method - check Card Eligibility By Suffix
 - (void) checkCardEligibilityBySuffix:(CDVInvokedUrlCommand*)command
 {
-    NSString * cardSuffix = [command.arguments objectAtIndex:0];
+	NSLog(@"AppleWallet::checkCardEligibilityBySuffix: entry!");
+    
+	NSString * cardSuffix = [command.arguments objectAtIndex:0];
     Boolean cardEligible = true;
     Boolean cardAddedtoPasses = false;
     Boolean cardAddedtoRemotePasses = false;
-    
+	
+	NSLog(@"AppleWallet::checkCardEligibilityBySuffix: {cardSuffix='%@'}!",cardSuffix);
+	
+ 
     PKPassLibrary *passLibrary = [[PKPassLibrary alloc] init];
 //     NSArray<PKPass *> *paymentPasses = [passLibrary passesOfType:PKPassTypePayment];
     NSArray *paymentPasses = [[NSArray alloc] init];
@@ -196,14 +201,17 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
             PKSecureElementPass *paymentPass = [pass secureElementPass];
             if ([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix]) {
                 cardAddedtoPasses = true;
+				NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses iOS 13.5+ cardAdded true!");
             }
         }
     } else {
       paymentPasses = [passLibrary passesOfType: PKPassTypePayment];
         for (PKPass *pass in paymentPasses) {
           PKPaymentPass * paymentPass = [pass paymentPass];
-          if([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix])
+          if([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix]) {
             cardAddedtoPasses = true;
+			NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses iOS 13.5- cardAdded true!");
+		  }
         }
     }
    
@@ -217,26 +225,37 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
             paymentPasses = [passLibrary remoteSecureElementPasses];
             for (PKSecureElementPass *pass in paymentPasses) {
               if ([[pass primaryAccountNumberSuffix] isEqualToString:cardSuffix]) {
-                cardAddedtoPasses = true;
+                cardAddedtoRemotePasses = true;
+				NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses remote cards iOS 13.5+ cardAdded true!");
               }
             }
           } else {
             paymentPasses = [passLibrary remotePaymentPasses];
             for (PKPass *pass in paymentPasses) {
               PKPaymentPass * paymentPass = [pass paymentPass];
-                if([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix])
-                  cardAddedtoRemotePasses = true;
+					if([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix]){
+						cardAddedtoRemotePasses = true;
+						NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses remote cards iOS 13.5- cardAdded true!");
+					}
+					
                 }
             }
 
         }
-        else
+        else {
             cardAddedtoRemotePasses = true;
+			NSLog(@"AppleWallet::checkCardEligibilityBySuffix: Session is not Paired!");
+		}
     }
-    else
+    else {
         cardAddedtoRemotePasses = true;
+		NSLog(@"AppleWallet::checkCardEligibilityBySuffix: WCSession is not Supported!");
+	}
     
     cardEligible = !cardAddedtoPasses || !cardAddedtoRemotePasses;
+	
+	NSLog(@"AppleWallet::checkCardEligibilityBySuffix: {cardAddedtoPasses='%@'}!",cardAddedtoPasses);
+	NSLog(@"AppleWallet::checkCardEligibilityBySuffix: {cardAddedtoRemotePasses='%@'}!",cardAddedtoRemotePasses);
     
     CDVPluginResult *pluginResult;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:cardEligible];
@@ -476,7 +495,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
     if (error != nil)
     {
         NSLog(@"AppleWallet::addPaymentPassViewController::: error!");
-		NSLog(@"%@",[error localizedDescription]);
+		NSLog(@"AppleWallet::%@",[error localizedDescription]);
         
         self.isRequestIssuedSuccess = NO;
         [self completeAddPaymentPass:nil];
