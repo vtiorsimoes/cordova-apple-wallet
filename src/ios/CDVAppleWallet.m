@@ -199,6 +199,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
       paymentPasses = [passLibrary passesOfType: PKPassTypeSecureElement];
         for (PKPass *pass in paymentPasses) {
             PKSecureElementPass *paymentPass = [pass secureElementPass];
+            NSLog(@"AppleWallet::checkCardEligibilityBySuffix: iOS 13.5+ {primaryAccountNumberSuffix='%@'}!",[paymentPass primaryAccountNumberSuffix]);
             if ([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix]) {
                 cardAddedtoPasses = true;
 				NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses iOS 13.5+ cardAdded true!");
@@ -208,6 +209,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
       paymentPasses = [passLibrary passesOfType: PKPassTypePayment];
         for (PKPass *pass in paymentPasses) {
           PKPaymentPass * paymentPass = [pass paymentPass];
+          NSLog(@"AppleWallet::checkCardEligibilityBySuffix: 13.5- {primaryAccountNumberSuffix='%@'}!",[paymentPass primaryAccountNumberSuffix]);
           if([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix]) {
             cardAddedtoPasses = true;
 			NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses iOS 13.5- cardAdded true!");
@@ -224,6 +226,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
           if (@available(iOS 13.5, *)) { // remotePaymentPasses is deprecated in iOS 13.5
             paymentPasses = [passLibrary remoteSecureElementPasses];
             for (PKSecureElementPass *pass in paymentPasses) {
+              NSLog(@"AppleWallet::checkCardEligibilityBySuffix: remote cards iOS 13.5+ {primaryAccountNumberSuffix='%@'}!",[pass primaryAccountNumberSuffix]);
               if ([[pass primaryAccountNumberSuffix] isEqualToString:cardSuffix]) {
                 cardAddedtoRemotePasses = true;
 				NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses remote cards iOS 13.5+ cardAdded true!");
@@ -233,6 +236,7 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
             paymentPasses = [passLibrary remotePaymentPasses];
             for (PKPass *pass in paymentPasses) {
               PKPaymentPass * paymentPass = [pass paymentPass];
+                    NSLog(@"AppleWallet::checkCardEligibilityBySuffix: remote cards iOS 13.5- {primaryAccountNumberSuffix='%@'}!",[paymentPass primaryAccountNumberSuffix]);
 					if([[paymentPass primaryAccountNumberSuffix] isEqualToString:cardSuffix]){
 						cardAddedtoRemotePasses = true;
 						NSLog(@"AppleWallet::checkCardEligibilityBySuffix: paymentPasses remote cards iOS 13.5- cardAdded true!");
