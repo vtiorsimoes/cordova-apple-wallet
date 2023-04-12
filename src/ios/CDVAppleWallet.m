@@ -196,7 +196,8 @@ typedef void (^completedPaymentProcessHandler)(PKAddPaymentPassRequest *request)
 //     NSArray<PKPass *> *paymentPasses = [passLibrary passesOfType:PKPassTypePayment];
     NSArray *paymentPasses = [[NSArray alloc] init];
     if (@available(iOS 13.5, *)) { // PKPassTypePayment is deprecated in iOS 13.5
-      paymentPasses = [passLibrary passesOfType: PKPassTypeSecureElement];
+      //paymentPasses = [passLibrary passesOfType: PKPassTypeSecureElement];
+      paymentPasses = [passLibrary passes];
       NSLog(@"AppleWallet::checkCardEligibilityBySuffix: iOS 13.5+ paymentPasses!");
         for (PKPass *pass in paymentPasses) {
             PKSecureElementPass *paymentPass = [pass secureElementPass];
