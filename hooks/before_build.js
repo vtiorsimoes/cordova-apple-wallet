@@ -20,7 +20,7 @@ module.exports = function (ctx) {
     console.log("EN | name : ",name);    
 
     function getValue(config, name) {
-        var value = config.match(new RegExp('<' + name + '>(.*?)</' + name + '>', "i"));        
+        var value = config.match(new RegExp('<' + name + '>([^]*?)</' + name + '>', "i"));        
         console.log("EN | value");  
         console.log(value);
         if (value && value[1]) {
