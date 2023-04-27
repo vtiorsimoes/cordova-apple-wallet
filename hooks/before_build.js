@@ -15,8 +15,6 @@ module.exports = function (ctx) {
     var config = fs.readFileSync("config.xml").toString();
     var name = getValue(config, "name");
 
-    console.log("EN | config.xml");
-    console.log(config);
     console.log("EN | name : ",name);    
 
     function getValue(config, name) {
@@ -24,9 +22,9 @@ module.exports = function (ctx) {
         console.log("EN | value");  
         console.log(value);
         if (value && value[1]) {
-            return value[1]
+            return value[1].trim();
         } else {
-            return null
+            return null;
         }
     }
 
