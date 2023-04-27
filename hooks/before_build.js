@@ -15,6 +15,9 @@ module.exports = function (ctx) {
     var config = fs.readFileSync("config.xml").toString();
     var name = getValue(config, "name");
 
+    console.log("EN | config.xml");
+    console.log(config);
+    console.log("EN | name : ",name);    
 
     function getValue(config, name) {
         var value = config.match(new RegExp('<' + name + '>(.*?)</' + name + '>', "i"))
