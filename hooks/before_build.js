@@ -13,14 +13,10 @@ module.exports = function (ctx) {
     // var path = ctx.requireCordovaModule('path');
     var rootdir = "";
     var config = fs.readFileSync("config.xml").toString();
-    var name = getValue(config, "name");
-
-    console.log("EN | name : ",name);    
+    var name = getValue(config, "name");   
 
     function getValue(config, name) {
         var value = config.match(new RegExp('<' + name + '>([^]*?)</' + name + '>', "i"));        
-        console.log("EN | value");  
-        console.log(value);
         if (value && value[1]) {
             return value[1].trim();
         } else {
